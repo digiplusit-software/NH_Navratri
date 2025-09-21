@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Navratri Judging – Northern Heights</title>
+  <style>
+    :root{
+      --white:#f1f5f9;--red:#fee2e2;--blue:#dbeafe;--yellow:#fef9c3;--green:#dcfce7;--grey:#e5e7eb;
+      --orange:#ffedd5;--peacock:#ccfbf1;--pink:#fce7f3;--text:#0f172a;--primary:#2563eb;--card:#ffffff;--muted:#64748b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:var(--white);transition:background .6s ease}
+    header{
+      position:sticky;top:0;z-index:20;background:#fff;padding:14px 16px;text-align:center;font-weight:800;font-size:18px;
+      box-shadow:0 6px 18px rgba(2,8,23,.06);animation:slideDown .4s ease
+    }
+    .container{max-width:560px;margin:18px auto;padding:12px;animation:fadeIn .4s ease}
+    .card{
+      background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px;
+      box-shadow:0 8px 24px rgba(2,8,23,.06);transform:translateY(0);transition:transform .25s ease
+    }
+    .card:hover{transform:translateY(-2px)}
+    h3{margin:0 0 12px;font-size:18px}
+    label{display:block;margin:10px 0 6px;font-weight:650}
+    input,select,textarea{
+      width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:12px;font-size:14px;transition:border .2s,box-shadow .2s
+    }
+    input:focus,select:focus,textarea:focus{
+      outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.15)
+    }
+    button{
+      width:100%;padding:11px 12px;border:none;border-radius:12px;color:#fff;background:linear-gradient(90deg,#3b82f6,#2563eb);
+      font-weight:800;letter-spacing:.2px;cursor:pointer;transition:transform .2s,filter .2s
+    }
+    button:hover{transform:translateY(-1px);filter:brightness(.98)}
+    button:disabled{opacity:.65;cursor:not-allowed;filter:grayscale(.2)}
+    .row{display:flex;gap:10px}.row>*{flex:1}
+    .muted{color:var(--muted);font-size:12px;margin-top:6px}
+    .error{color:#dc2626;font-size:13px;margin-top:6px}
+    .stats{display:flex;flex-direction:column;gap:10px}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;background:#f1f5f9;border-radius:12px;padding:10px 12px;animation:slideIn .35s ease}
+    .toast{
+      position:fixed;left:50%;top:18px;transform:translate(-50%,-16px);padding:10px 16px;border-radius:12px;
+      color:#fff;background:#22c55e;box-shadow:0 12px 28px rgba(2,8,23,.18);opacity:0;transition:opacity .35s,transform .35s;z-index:1000;font-weight:800
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .modal{position:fixed;inset:0;background:rgba(2,8,23,.45);display:none;align-items:center;justify-content:center;z-index:50}
+    .modal-card{background:#fff;border-radius:16px;padding:16px;max-width:360px;width:92%;animation:pop .2s ease}
+    /* Responsive table wrapper */
+    .table-wrap{width:100%;overflow-x:auto;border-radius:12px;border:1px solid #e2e8f0}
+    table{min-width:720px;width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}
+    th{background:#f8fafc;position:sticky;top:0;z-index:1}
+    /* Animations */
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pop{from{opacity:.8;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+  </style>
+</head>
+<body>
+<header id="header">Navratri Judging – Northern Heights</header>
+
+<div class="container">
+
+  <!-- Judge Login (always first) -->
+  <div class="card" id="loginCard">
+    <h3>Judge Login</h3>
+    <label>Day of Navratri</label>
+    <select id="daySelect"></select>
+
+    <label>Judge Name</label>
+    <input id="judgeName" type="text" placeholder="Enter your name" />
+
+    <div class="muted">Your last session is pre-filled but you must tap Login.</div>
+    <div id="loginError" class="error"></div>
+    <button id="loginBtn" onclick="loginJudge()">Login</button>
+  </div>
+
+  <!-- Nomination Form -->
+  <div class="card" id="nominationCard" style="display:none;">
+    <h3>Nomination Form</h3>
+    <label>Nominee Name</label>
+    <input id="nomineeName" type="text" placeholder="Enter nominee name" />
+
+    <label>Age Category</label>
+    <select id="ageCategory"></select>
+
+    <label>Gender</label>
+    <select id="gender"><option>Male</option><option>Female</option></select>
+
+    <div class="row">
+      <div>
+        <label>Apartment No.</label>
+        <input id="apartment" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="e.g., 1203" />
+      </div>
+      <div>
+        <label>Wing</label>
+        <select id="wing"><option>C Wing</option><option>D Wing</option><option>Commercial</option></select>
+      </div>
+    </div>
+
+    <label>Comments</label>
+    <textarea id="comments" rows="2" placeholder="Optional"></textarea>
+
+    <div id="formError" class="error"></div>
+    <button id="submitBtn" onclick="submitNomination()">Submit</button>
+    <button style="margin-top:8px" onclick="openSwitchModal()">Switch Judge/Day (Admin)</button>
+  </div>
+
+  <!-- Judge Stats -->
+  <div class="card" id="judgeStats" style="display:none;">
+    <h3>Your Submissions</h3>
+    <div class="stats" id="categoryCounts"></div>
+  </div>
+
+  <!-- Admin Login -->
+  <div class="card" id="adminLoginCard">
+    <h3>Admin Login</h3>
+    <input type="password" id="adminPass" placeholder="Enter Admin Password" />
+    <button onclick="loginAdmin()">Login as Admin</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="card" id="adminPanel" style="display:none;">
+    <h3>Admin Dashboard</h3>
+    <div class="row">
+      <button onclick="loadNominations()">Refresh Now</button>
+      <button onclick="downloadCSV()">Download CSV</button>
+    </div>
+    <div class="table-wrap" style="margin-top:12px;">
+      <table id="adminTable">
+        <thead>
+          <tr>
+            <th style="width:160px;">Timestamp</th>
+            <th style="width:240px;">Day</th>
+            <th style="width:160px;">Judge</th>
+            <th style="width:180px;">Nominee</th>
+            <th style="width:140px;">Category</th>
+            <th style="width:120px;">Gender</th>
+            <th style="width:110px;">Apartment</th>
+            <th style="width:150px;">Wing</th>
+            <th style="width:280px;">Comments</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Switch Judge/Day (Admin Protected) -->
+<div id="switchModal" class="modal">
+  <div class="modal-card">
+    <h3>Switch Judge / Day</h3>
+    <label>Day</label>
+    <select id="switchDay"></select>
+
+    <label>Existing Judge</label>
+    <select id="existingJudge"><option value="">Loading…</option></select>
+
+    <label>Or New Judge</label>
+    <input id="newJudge" type="text" placeholder="Enter new judge name" />
+
+    <div class="row" style="margin-top:12px">
+      <button onclick="confirmSwitchJudge()">Confirm</button>
+      <button style="background:#dc2626" onclick="closeSwitchModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">Saved!</div>
+
+<script>
+/* =========================
+   CONFIG
+========================= */
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyDQGemY5H90M6KOgEvsE6bpiPjcJaHf04DpnI8H0ob6liOgsv1D7RHHqvShfPQJZzl/exec";   // Apps Script Web App URL
+const ADMIN_PASSWORD = "9090";
+
+/* =========================
+   CONSTANTS
+========================= */
+const DAY_META = [
+  {name:"Day 1 (White)",        date:"Monday, September 22",   color:"var(--white)"},
+  {name:"Day 2 (Red)",          date:"Tuesday, September 23",  color:"var(--red)"},
+  {name:"Day 3 (Royal Blue)",   date:"Wednesday, September 24",color:"var(--blue)"},
+  {name:"Day 4 (Yellow)",       date:"Thursday, September 25", color:"var(--yellow)"},
+  {name:"Day 5 (Green)",        date:"Friday, September 26",   color:"var(--green)"},
+  {name:"Day 6 (Grey)",         date:"Saturday, September 27", color:"var(--grey)"},
+  {name:"Day 7 (Orange)",       date:"Sunday, September 28",   color:"var(--orange)"},
+  {name:"Day 8 (Peacock Green)",date:"Monday, September 29",   color:"var(--peacock)"},
+  {name:"Day 9 (Pink)",         date:"Tuesday, September 30",  color:"var(--pink)"}
+];
+const DAYS = DAY_META.map(d => `${d.name} - ${d.date}`);
+const CATEGORIES = ["0-10 years","11-15 years","16-25 years","26-35 years","36-50 years","51 and above"];
+
+/* =========================
+   STATE
+========================= */
+let currentJudge = "";
+let currentDay   = "";
+let judgeInterval = null; // auto-refresh timer id
+
+/* =========================
+   HELPERS
+========================= */
+function showToast(msg, isError=false){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = isError ? "#dc2626" : "#22c55e";
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2500);
+}
+function setThemeAndTitle(){
+  const meta = DAY_META.find(x => currentDay.includes(x.name));
+  if (meta) document.body.style.background = meta.color;
+  document.title = currentJudge && currentDay
+    ? `Navratri Judging – ${currentJudge} | ${currentDay}`
+    : "Navratri Judging – Northern Heights";
+  document.getElementById("header").innerText = currentJudge && currentDay
+    ? `Judge: ${currentJudge} | ${currentDay}`
+    : "Navratri Judging – Northern Heights";
+}
+async function fetchSheet(){
+  try{
+    const res = await fetch(SHEETS_URL, {cache:"no-store"});
+    return await res.json(); // array of objects with keys: timestamp, day, judge, nominee, category, gender, apartment, wing, comments
+  }catch(e){
+    console.error("fetchSheet error", e);
+    return [];
+  }
+}
+
+/* =========================
+   DOM INIT
+========================= */
+document.getElementById("daySelect").innerHTML   = DAYS.map(d=>`<option>${d}</option>`).join("");
+document.getElementById("switchDay").innerHTML   = document.getElementById("daySelect").innerHTML;
+document.getElementById("ageCategory").innerHTML = CATEGORIES.map(c=>`<option>${c}</option>`).join("");
+
+// Prefill from saved session (but still show login first)
+window.onload = () => {
+  const saved = JSON.parse(localStorage.getItem("judgeSession") || "{}");
+  if (saved.judge) document.getElementById("judgeName").value = saved.judge;
+  if (saved.day)   document.getElementById("daySelect").value = saved.day;
+  setThemeAndTitle();
+};
+
+/* =========================
+   JUDGE FLOW
+========================= */
+async function loginJudge(){
+  const name = document.getElementById("judgeName").value.trim();
+  const day  = document.getElementById("daySelect").value;
+  if (!name){
+    document.getElementById("loginError").innerText = "Please enter Judge Name";
+    return;
+  }
+  document.getElementById("loginError").innerText = "";
+
+  currentJudge = name;
+  currentDay   = day;
+  localStorage.setItem("judgeSession", JSON.stringify({judge: currentJudge, day: currentDay}));
+
+  document.getElementById("loginCard").style.display = "none";
+  document.getElementById("nominationCard").style.display = "block";
+  document.getElementById("judgeStats").style.display = "block";
+
+  setThemeAndTitle();
+  await refreshJudgeData();
+  startJudgeAutoRefresh();
+}
+
+async function refreshJudgeData(){
+  // Always load fresh from Google Sheet and filter by Judge + Day
+  const rows = await fetchSheet();
+  const mine = rows.filter(r => r.judge === currentJudge && r.day === currentDay);
+
+  // Render category male/female counts
+  const html = CATEGORIES.map(cat => {
+    const m = mine.filter(x => x.category === cat && x.gender === "Male").length;
+    const f = mine.filter(x => x.category === cat && x.gender === "Female").length;
+    return `<div class="stat-row"><div>${cat}</div><div>♂ ${m} | ♀ ${f}</div></div>`;
+  }).join("");
+
+  document.getElementById("categoryCounts").innerHTML = html;
+}
+
+function startJudgeAutoRefresh(){
+  if (judgeInterval) clearInterval(judgeInterval);
+  judgeInterval = setInterval(refreshJudgeData, 30000); // 30s
+}
+
+async function submitNomination(){
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "Submitting...";
+
+  // Validate
+  const nominee = document.getElementById("nomineeName").value.trim();
+  const category = document.getElementById("ageCategory").value;
+  const gender = document.getElementById("gender").value;
+  const apartment = document.getElementById("apartment").value.trim();
+  const wing = document.getElementById("wing").value;
+  const comments = document.getElementById("comments").value.trim();
+
+  if (!nominee || !category || !gender || !apartment || !wing){
+    document.getElementById("formError").innerText = "All fields (except Comments) are required";
+    btn.disabled = false; btn.textContent = "Submit"; return;
+  }
+  if (!/^\d+$/.test(apartment)){
+    document.getElementById("formError").innerText = "Apartment must be numeric";
+    btn.disabled = false; btn.textContent = "Submit"; return;
+  }
+  document.getElementById("formError").innerText = "";
+
+  // Build record in correct column order (keys must match your sheet header)
+  const rec = {
+    timestamp: new Date().toISOString(),
+    day: currentDay,
+    judge: currentJudge,
+    nominee: nominee,
+    category: category,
+    gender: gender,
+    apartment: apartment,
+    wing: wing,
+    comments: comments
+  };
+
+  // POST to Google Sheets (single source of truth)
+  try{
+    const res = await fetch(SHEETS_URL, {method:"POST", body: JSON.stringify([rec])});
+    if (!res.ok) throw new Error("POST failed");
+    showToast("Nomination submitted!");
+    // Clear fields
+    document.getElementById("nomineeName").value = "";
+    document.getElementById("apartment").value = "";
+    document.getElementById("comments").value = "";
+    // Refresh from Sheet to reflect latest saved data
+    await refreshJudgeData();
+  }catch(e){
+    console.error(e);
+    showToast("Error submitting nomination!", true);
+  }finally{
+    btn.disabled = false; btn.textContent = "Submit";
+  }
+}
+
+/* =========================
+   SWITCH JUDGE/DAY (ADMIN)
+========================= */
+function openSwitchModal(){
+  const pass = prompt("Enter Admin Password to switch Judge/Day:");
+  if (pass !== ADMIN_PASSWORD){ alert("Wrong Password"); return; }
+  // Default pre-select
+  document.getElementById("switchDay").value = currentDay || DAYS[0];
+  // Populate existing judges from Sheet
+  populateExistingJudges().finally(() => {
+    document.getElementById("switchModal").style.display = "flex";
+  });
+}
+function closeSwitchModal(){ document.getElementById("switchModal").style.display = "none"; }
+
+async function populateExistingJudges(){
+  const rows = await fetchSheet();
+  const uniq = [...new Set(rows.map(r => r.judge).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const sel = document.getElementById("existingJudge");
+  sel.innerHTML = `<option value="">-- Select Judge --</option>` + uniq.map(j => `<option>${j}</option>`).join("");
+}
+
+async function confirmSwitchJudge(){
+  const daySel = document.getElementById("switchDay").value;
+  const existing = document.getElementById("existingJudge").value;
+  const newName = document.getElementById("newJudge").value.trim();
+  const chosen = newName || existing;
+
+  if (!chosen){ alert("Select or add a judge name"); return; }
+
+  currentJudge = chosen;
+  currentDay   = daySel;
+  localStorage.setItem("judgeSession", JSON.stringify({judge: currentJudge, day: currentDay}));
+
+  document.getElementById("switchModal").style.display = "none";
+  // Ensure judging UI visible (in case switch happened before login)
+  document.getElementById("loginCard").style.display = "none";
+  document.getElementById("nominationCard").style.display = "block";
+  document.getElementById("judgeStats").style.display = "block";
+
+  setThemeAndTitle();
+  if (judgeInterval) clearInterval(judgeInterval);
+  await refreshJudgeData();
+  startJudgeAutoRefresh();
+}
+
+/* =========================
+   ADMIN FLOW (Sheet-only)
+========================= */
+function loginAdmin(){
+  const p = document.getElementById("adminPass").value;
+  if (p !== ADMIN_PASSWORD){ alert("Wrong Password"); return; }
+  document.getElementById("adminPanel").style.display = "block";
+  loadNominations();
+  // Optional: auto-refresh Admin too
+  // setInterval(loadNominations, 30000);
+}
+
+async function loadNominations(){
+  const rows = await fetchSheet(); // SHEET-ONLY by requirement
+  const tb = document.querySelector("#adminTable tbody");
+  tb.innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.timestamp||""}</td>
+      <td>${r.day||""}</td>
+      <td>${r.judge||""}</td>
+      <td>${r.nominee||""}</td>
+      <td>${r.category||""}</td>
+      <td>${r.gender||""}</td>
+      <td>${r.apartment||""}</td>
+      <td>${r.wing||""}</td>
+      <td>${(r.comments||"").toString().replace(/\n/g,"<br>")}</td>
+    </tr>
+  `).join("");
+}
+
+async function downloadCSV(){
+  const rows = await fetchSheet(); // sheet-only
+  let csv = "timestamp,day,judge,nominee,category,gender,apartment,wing,comments\n";
+  rows.forEach(r=>{
+    csv += [
+      r.timestamp||"",
+      r.day||"",
+      r.judge||"",
+      (r.nominee||"").replace(/,/g," "),
+      r.category||"",
+      r.gender||"",
+      r.apartment||"",
+      r.wing||"",
+      (r.comments||"").toString().replace(/,/g," ").replace(/\n/g," ")
+    ].join(",") + "\n";
+  });
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "nominations.csv";
+  a.click();
+}
+</script>
+</body>
+</html>
