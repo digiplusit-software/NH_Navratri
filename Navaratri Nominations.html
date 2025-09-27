@@ -284,7 +284,7 @@ async function refreshJudgeData(){
   const html = CATEGORIES.map(cat => {
     const m = mine.filter(x => x.category === cat && x.gender === "Male").length;
     const f = mine.filter(x => x.category === cat && x.gender === "Female").length;
-    return `<div class="stat-row"><div>${cat}</div><div>♂ ${m} | ♀ ${f}</div></div>`;
+    return `<div class="stat-row"><div>${cat}</div><div>M ${m} | F ${f}</div></div>`;
   }).join("");
 
   document.getElementById("categoryCounts").innerHTML = html;
@@ -450,4 +450,5 @@ async function downloadCSV(){
 </script>
 </body>
 </html>
+
 
